@@ -1,13 +1,19 @@
 #! /usr/bin/perl
-#use 5.014;
 use strict;
 use warnings;
 use Crypt::Skip32::Base64URLSafe;
+use DBI;
+my $dbh = DBI->connect("DBI:mysql:database=short;host=localhost",
+                         "short", "short",
+                         {'RaiseError' => 1});
 
 my $key    = pack( 'H20', "34671290123419302824" );
-my $id =  $ARGV[0] or die "I need a value to shorten";
+my $url =  $ARGV[0] or die "I need a value to shorten";
+my $id = $dbh->selectrow_array("select id from url where url = ?",undef,$url) or die "url doenst exist";
+$dbh->disconnect();
 my $short = shorten($id,$key);
 print "$short\n";
+
 sub shorten {
     my $idarg = $_[0];
     my $keyarg = $_[1];
